@@ -1,15 +1,39 @@
 import path from "path";
 import fs from "fs/promises";
+import { constants } from "fs";
 
 const up = async (currentDirectory) => {
   try {
+    await fs.access(
+      path.join(currentDirectory, ".."),
+      constants.R_OK | constants.F_OK
+    );
+  } catch (err) {
+    console.log(new Error("Invalid input"));
+    return null;
+  }
+
+  try {
     return path.join(currentDirectory, "..");
   } catch (err) {
-    throw new Error("Operation failed");
+    console.log(new Error("Operation failed"));
+    return null;
   }
 };
 
-const cd = async (currentDirectory, newPath) => {
+const cd = async (currentDirectory, newPath, check = false) => {
+  if (check) {
+    try {
+      await fs.access(
+        path.join(currentDirectory, newPath),
+        constants.R_OK | constants.F_OK
+      );
+    } catch (err) {
+      console.log(new Error("Invalid input"));
+      return null;
+    }
+  }
+
   try {
     if (path.isAbsolute(newPath)) {
       return newPath;
@@ -17,7 +41,8 @@ const cd = async (currentDirectory, newPath) => {
       return path.join(currentDirectory, newPath);
     }
   } catch (err) {
-    throw new Error("Operation failed");
+    console.log(new Error("Operation failed"));
+    return null;
   }
 };
 
@@ -28,8 +53,7 @@ const list = async (currentDirectory) => {
       console.log(file.name);
     }
   } catch (err) {
-    console.log(err);
-    throw new Error("Operation failed");
+    console.log(new Error("Operation failed"));
   }
 };
 
