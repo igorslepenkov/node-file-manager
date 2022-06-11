@@ -95,6 +95,19 @@ async function handleOperations() {
         getInputValue(userInput, "rm")
       );
       remove(pathToFile);
+    } else if (userInput === "os --EOL") {
+      console.log(JSON.stringify(os.EOL));
+    } else if (userInput === "os --cpus") {
+      console.log(os.cpus().length);
+      os.cpus().forEach((cpu) =>
+        console.log(cpu.model + "\n", `${cpu.speed / 1000} GHz`)
+      );
+    } else if (userInput === "os --homedir") {
+      console.log(os.homedir());
+    } else if (userInput === "os --username") {
+      console.log(os.userInfo().username);
+    } else if (userInput === "os --architecture") {
+      console.log(os.arch());
     }
   });
 }
