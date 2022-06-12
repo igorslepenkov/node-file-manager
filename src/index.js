@@ -4,6 +4,9 @@ import path from "path";
 import { getInputValue } from "./utils/getInputValue.js";
 import { up, cd, list } from "./navigation/navigation.js";
 import { read, create, rename, copy, move, remove } from "./fs/fs-exports.js";
+import { calculateHash } from "./hash/calcHash.js";
+import { compress } from "./zip/compress.js";
+import { decompress } from "./zip/decompress.js";
 
 let currentDirectory = os.homedir();
 const currentUsername = process.argv[2].match(/^--username=(.+)/)[1];
@@ -62,13 +65,11 @@ async function handleOperations() {
     } else if (userInput.startsWith("rn")) {
       const oldPath = await cd(
         currentDirectory,
-        getInputValue(userInput, "rn")[0]
+        getInputValue(userInput, "rn")[0],
+        true
       );
-      const newPath = path.join(
-        path.dirname(oldPath),
-        getInputValue(userInput, "rn")[1]
-      );
-      rename(oldPath, newPath);
+      const newFileName = getInputValue(userInput, "rn")[1];
+      rename(oldPath, newFileName);
     } else if (userInput.startsWith("cp")) {
       const oldPath = await cd(
         currentDirectory,
@@ -108,7 +109,43 @@ async function handleOperations() {
       console.log(os.userInfo().username);
     } else if (userInput === "os --architecture") {
       console.log(os.arch());
+    } else if (userInput.startsWith("hash")) {
+      const pathToFile = await cd(
+        currentDirectory,
+        getInputValue(userInput, "hash")
+      );
+      calculateHash(pathToFile);
+    } else if (userInput.startsWith("compress")) {
+      const pathToFile = await cd(
+        currentDirectory,
+        getInputValue(userInput, "compress")[0]
+      );
+      const destPath = await cd(
+        currentDirectory,
+        getInputValue(userInput, "compress")[1]
+      );
+      compress(pathToFile, destPath);
+    } else if (userInput.startsWith("decompress")) {
+      const pathToFile = await cd(
+        currentDirectory,
+        getInputValue(userInput, "decompress")[0]
+      );
+      const destPath = await cd(
+        currentDirectory,
+        getInputValue(userInput, "decompress")[1]
+      );
+      decompress(pathToFile, destPath);
+    } else if (userInput === ".exit") {
+      console.log(`Thank you for using File Manager, ${currentUsername}!`);
+      process.exit();
+    } else {
+      console.log(new Error("Invalid input"));
     }
+  });
+
+  rl.on("SIGINT", () => {
+    console.log(`Thank you for using File Manager, ${currentUsername}!`);
+    process.exit();
   });
 }
 

@@ -6,7 +6,11 @@ export const remove = async (pathToFile) => {
   try {
     await fs.access(path.join(pathToFile), constants.R_OK | constants.F_OK);
   } catch (err) {
-    console.log(new Error("Invalid input"));
+    console.log(
+      new Error(
+        "Operation failed. File or folder doesn't exists or could not be reached from this directory"
+      )
+    );
     return null;
   }
 
