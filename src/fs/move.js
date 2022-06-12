@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import { constants } from "fs";
 import path from "path";
+import { createReadStream, createWriteStream } from "fs";
 
 export const move = async (srcPath, destPath, check = false) => {
   if (check) {
@@ -8,39 +9,24 @@ export const move = async (srcPath, destPath, check = false) => {
       await fs.access(srcPath, constants.R_OK | constants.F_OK);
       await fs.access(destPath, constants.R_OK | constants.F_OK);
     } catch (err) {
-      console.log(new Error("Invalid input"));
+      console.log(
+        new Error(
+          "Operation failed. File or folder doesn't exists or could not be reached from this directory"
+        )
+      );
       return null;
     }
   }
 
   try {
-    if (!path.extname(srcPath)) {
-      await fs.mkdir(path.join(destPath, path.basename(srcPath)));
-      const destination = path.join(destPath, path.basename(srcPath));
-
-      const files = await fs.readdir(srcPath, { withFileTypes: true });
-
-      for (const file of files) {
-        if (file.isFile()) {
-          await fs.copyFile(
-            path.join(srcPath, file.name),
-            path.join(destination, file.name),
-            constants.COPYFILE_EXCL
-          );
-        } else {
-          await move(path.join(srcPath, file.name), destination);
-        }
-      }
-    } else {
-      await fs.copyFile(
-        srcPath,
-        path.join(destPath, path.basename(srcPath)),
-        constants.COPYFILE_EXCL
-      );
-    }
+    const readStream = createReadStream(srcPath);
+    const writeStream = createWriteStream(
+      path.join(destPath, path.basename(srcPath))
+    );
+    readStream.pipe(writeStream);
   } catch (err) {
     console.log(new Error("Operation failed"));
   } finally {
-    fs.rm(srcPath, { recursive: true });
+    fs.rm(srcPath);
   }
 };

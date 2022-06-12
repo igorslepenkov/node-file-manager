@@ -1,17 +1,20 @@
 import fs from "fs/promises";
-import path from "path";
-import { constants } from "fs";
+import { constants, createReadStream } from "fs";
 
 export const read = async (fileToRead) => {
   try {
-    await fs.access(path.join(fileToRead), constants.R_OK | constants.F_OK);
+    await fs.access(fileToRead, constants.R_OK | constants.F_OK);
   } catch (err) {
-    console.log(new Error("Invalid input"));
+    console.log(
+      new Error(
+        "Operation failed. File or folder doesn't exists or could not be reached from this directory"
+      )
+    );
     return null;
   }
   try {
-    const data = await fs.readFile(fileToRead, { encoding: "utf-8" });
-    process.stdout.write(data);
+    const rs = createReadStream(fileToRead);
+    rs.pipe(process.stdout);
   } catch (err) {
     throw new Error("FS operation failed");
   }

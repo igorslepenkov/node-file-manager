@@ -4,16 +4,6 @@ import { constants } from "fs";
 
 const up = async (currentDirectory) => {
   try {
-    await fs.access(
-      path.join(currentDirectory, ".."),
-      constants.R_OK | constants.F_OK
-    );
-  } catch (err) {
-    console.log(new Error("Invalid input"));
-    return null;
-  }
-
-  try {
     return path.join(currentDirectory, "..");
   } catch (err) {
     console.log(new Error("Operation failed"));
@@ -29,7 +19,11 @@ const cd = async (currentDirectory, newPath, check = false) => {
         constants.R_OK | constants.F_OK
       );
     } catch (err) {
-      console.log(new Error("Invalid input"));
+      console.log(
+        new Error(
+          "Operation failed. File or folder doesn't exists or could not be reached from this directory"
+        )
+      );
       return null;
     }
   }

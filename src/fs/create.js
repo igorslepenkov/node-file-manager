@@ -1,13 +1,24 @@
-import fs from "fs/promises";
+import { createWriteStream, constants } from "fs";
+import { access } from "fs/promises";
 import path from "path";
-import url from "url";
 
-const dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
-export const create = async (path, text = "") => {
+export const create = async (destination, text = "") => {
   try {
-    await fs.writeFile(path, text, { flag: "wx" });
+    access(path.dirname(destination), constants.F_OK);
   } catch (err) {
-    throw new Error("FS operation failed");
+    console.log(
+      new Error(
+        "Operation failed. File or folder doesn't exists or could not be reached from this directory"
+      )
+    );
+  }
+
+  try {
+    const writeStream = createWriteStream(destination);
+    if (text) {
+      writeStream.write(text);
+    }
+  } catch (err) {
+    console.log(new Error("Operation failed"));
   }
 };
